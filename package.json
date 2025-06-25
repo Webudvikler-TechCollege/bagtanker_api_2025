@@ -10,7 +10,8 @@
     "migrate": "prisma migrate dev",
     "prepare": "prisma generate",
     "db:init": "prisma migrate dev && prisma db seed",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "clean": "tsc --build --clean"
   },
   "keywords": [],
   "author": "",
@@ -20,7 +21,8 @@
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "slugify": "^1.6.6"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

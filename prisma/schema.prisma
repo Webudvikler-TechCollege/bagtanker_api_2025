@@ -13,21 +13,163 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model user {
-  id            Int     @id @default(autoincrement())
+model User {
+  id            Int      @id @default(autoincrement())
   name          String
-  email         String  @unique
+  email         String   @unique
   passwordHash  String
   refresh_token String
-  is_active     Boolean @default(true)
+  is_active     Boolean  @default(true)
+  created       DateTime @default(now())
+  updated       DateTime @updatedAt
+
+  favorites Favorite[]
+  comments  Comment[]
+
+  @@map("users")
 }
 
-model product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String   @db.Text
-  price       Decimal  @db.Decimal(10, 2)
-  stock       Int
-  is_active   Boolean  @default(true)
+model Category {
+  id        String   @id @default(uuid())
+  title     String
+  slug      String   @default("untitled")
+  is_active Boolean
+  created   DateTime @default(now())
+  updated   DateTime @updatedAt
+
+  categoryProducts CategoryProduct[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  imageId     String
+  title       String
+  slug        String   @default("untitled")
+  teaser      String
+  description String
+  duration    Int
+  amount      Int
+  price       Float
   created     DateTime @default(now())
+  updated     DateTime @updatedAt
+
+  image             Image               @relation(fields: [imageId], references: [id])
+  productIngredient ProductIngredient[]
+  categoryProducts  CategoryProduct[]
+  favorites         Favorite[] // Added relation back to Favorite
+  comments          Comment[] // Added relation back to Comment
+
+  @@map("products")
+}
+
+model Image {
+  id       String    @id @default(uuid())
+  filename String
+  products Product[]
+  news     News[]
+
+  @@map("images")
+}
+
+model Unit {
+  id                String              @id @default(uuid())
+  name              String
+  abbreviation      String
+  ProductIngredient ProductIngredient[]
+
+  @@map("units")
+}
+
+model News {
+  id         String   @id @default(uuid())
+  title      String
+  slug       String
+  teaser     String
+  content    String
+  imageId    String
+  image      Image    @relation(fields: [imageId], references: [id])
+  created_at DateTime @default(now())
+  is_active  Boolean
+
+  @@map("news")
+}
+
+model CategoryProduct {
+  categoryId String
+  productId  String
+
+  category Category @relation(fields: [categoryId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@id([categoryId, productId])
+  @@map("category_product")
+}
+
+model Ingredient {
+  id                String              @id @default(uuid())
+  title             String
+  ProductIngredient ProductIngredient[]
+
+  @@map("ingredients")
+}
+
+model ProductIngredient {
+  productId    String
+  ingredientId String
+  unitId       String
+  amount       String
+  ordernum     Int
+
+  product    Product    @relation(fields: [productId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+  unit       Unit       @relation(fields: [unitId], references: [id])
+
+  @@id([productId, ingredientId])
+  @@map("product_ingredient")
+}
+
+model Favorite {
+  userId    Int
+  productId String
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@id([userId, productId])
+  @@map("favorites")
+}
+
+model Message {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String
+  message    String
+  created_at DateTime @default(now())
+
+  @@map("messages")
+}
+
+model NewsletterSubscriber {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  created_at DateTime @default(now())
+
+  @@map("newsletter_subscribers")
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  title      String
+  comment    String   @db.LongText
+  userId     Int
+  productId  String
+  created_at DateTime @default(now())
+  is_active  Boolean  @default(true)
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("comments")
 }
